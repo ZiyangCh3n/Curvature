@@ -1,0 +1,22 @@
+variable s0 equal 0.5 #shrink factor
+variable s1 equal 1.2 #stretch factor
+
+read_restart ./crosslink_${s0}.restart
+
+group polymer type 1
+neighbor 5 bin
+neigh_modify every 1 delay 0
+
+change_box all x scale ${s1} y scale ${s1} z scale ${s1} remap
+
+minimize 1.0e-4 1.0e-6 10000 100000
+
+thermo 30000
+
+fix allnve all nve
+fix langevin polymer langevin 300 0 1 5678915 zero no
+dump relax all movie 1000 ./stretched_${s0}_${s1}.mpeg type type zoom 1 box yes 0.01 view 120 85 size 1920 1080 shiny 0.5
+dump_modify relax adiam 1 1
+
+run 300000
+write_data ./stretched_${s0}_${s1}.data
